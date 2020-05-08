@@ -12,32 +12,42 @@ class BytebankApp extends StatelessWidget {
   }
 }
 
-class FormularioTransferencia extends StatelessWidget {
+class FormularioTransferencia extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return FormularioTransferenciaState();
+  }
+}
 
-  final TextEditingController _controladorCampoNumeroConta = TextEditingController();
+class FormularioTransferenciaState extends State<FormularioTransferencia> {
+  final TextEditingController _controladorCampoNumeroConta =
+  TextEditingController();
   final TextEditingController _controladorCampoValor = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Criando Transferência'),
       ),
-      body: Column(
-        children: <Widget>[
-          Editor(
-              controller: _controladorCampoNumeroConta,
-              rotulo: 'Numero conta',
-              dica: '0000'),
-          Editor(
-              controller: _controladorCampoValor,
-              rotulo: 'Valor',
-              dica: '0.00',
-              icone: Icons.monetization_on),
-          RaisedButton(
-            child: Text('Confirmar'),
-            onPressed: () => _CriaTransferencia(context),
-          ),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            Editor(
+                controller: _controladorCampoNumeroConta,
+                rotulo: 'Numero conta',
+                dica: '0000'),
+            Editor(
+                controller: _controladorCampoValor,
+                rotulo: 'Valor',
+                dica: '0.00',
+                icone: Icons.monetization_on),
+            RaisedButton(
+              child: Text('Confirmar'),
+              onPressed: () => _CriaTransferencia(context),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -53,7 +63,6 @@ class FormularioTransferencia extends StatelessWidget {
 }
 
 class Editor extends StatelessWidget {
-
   final TextEditingController controller;
   final String rotulo;
   final String dica;
@@ -80,32 +89,48 @@ class Editor extends StatelessWidget {
   }
 }
 
-class ListaTransferencia extends StatelessWidget {
+class ListaTransferencia extends StatefulWidget {
+  @override
+  final List<Transferencia> _transferencias = List();
+
+  State<StatefulWidget> createState() {
+    return ListaTransferenciasState();
+  }
+}
+
+class ListaTransferenciasState extends State<ListaTransferencia> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         title: Text('Transferencias'),
       ),
-      body: Column(
-        children: <Widget>[
-          itemTransferencia(Transferencia(100.0, 1000)),
-          itemTransferencia(Transferencia(200.0, 1001)),
-          itemTransferencia(Transferencia(300.0, 1002)),
-        ],
+      body: ListView.builder(
+        itemCount: widget._transferencias.length,
+        itemBuilder: (context, indice) {
+          final transferencia = widget._transferencias[indice];
+          return itemTransferencia(transferencia);
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add), onPressed: () {
-        final Future<Transferencia> future = Navigator.push(
-            context, MaterialPageRoute(builder: (context) {
-          return FormularioTransferencia();
-        }));
-        future.then((transferenciaRecebida) {
-          debugPrint('Chegou no then do future');
-          debugPrint('$transferenciaRecebida');
-        });
-      },
+        child: Icon(Icons.add),
+        onPressed: () {
+          final Future<Transferencia> future =
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return FormularioTransferencia();
+          }));
+          future.then((transferenciaRecebida) {
+            Future.delayed(Duration(seconds: 3), () {
+              debugPrint('Chegou no then do future');
+              debugPrint('$transferenciaRecebida');
+              if (transferenciaRecebida != null) {
+                setState(() {
+                  widget._transferencias.add(transferenciaRecebida);
+                });
+              }
+            });
+          });
+        },
       ),
     );
   }
@@ -113,6 +138,7 @@ class ListaTransferencia extends StatelessWidget {
 
 class itemTransferencia extends StatelessWidget {
   final Transferencia _transferencia;
+
   itemTransferencia(this._transferencia);
 
   @override
